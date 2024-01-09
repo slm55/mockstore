@@ -3,11 +3,11 @@ console.clear()
 let id = location.search.split('?')[1]
 console.log(id)
 
-if(document.cookie.indexOf(',counter=')>=0)
-{
-    let counter = document.cookie.split(',')[1].split('=')[1]
-    document.getElementById("badge").innerHTML = counter
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+if (cart.length > 0) {
+    document.getElementById("badge").innerHTML = cart.length;
 }
+
 
 function dynamicContentDetails(ob)
 {
@@ -85,18 +85,24 @@ function dynamicContentDetails(ob)
     buttonDiv.appendChild(buttonTag)
 
     buttonText = document.createTextNode('Add to Cart')
-    buttonTag.onclick  =   function()
+    buttonTag.onclick  =  function()
     {
-        let order = id+" "
-        let counter = 1
-        if(document.cookie.indexOf(',counter=')>=0)
-        {
-            order = id + " " + document.cookie.split(',')[0].split('=')[1]
-            counter = Number(document.cookie.split(',')[1].split('=')[1]) + 1
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        cart.push(ob);
+        localStorage.setItem("cart", JSON.stringify(cart));
+
+        // let order = id + " "
+        // let counter = 1
+        // if(document.cookie.indexOf(',counter=') >= 0)
+        // {
+        //     order = id + " " + document.cookie.split(',')[0].split('=')[1]
+        //     counter = Number(document.cookie.split(',')[1].split('=')[1]) + 1
+        // }
+        // document.cookie = "orderId=" + order + ",counter=" + counter
+        if (cart.length > 0) {
+            document.getElementById("badge").innerHTML = cart.length;
         }
-        document.cookie = "orderId=" + order + ",counter=" + counter
-        document.getElementById("badge").innerHTML = counter
-        console.log(document.cookie)
+        // console.log(document.cookie)
     }
     buttonTag.appendChild(buttonText)
 

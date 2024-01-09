@@ -2,7 +2,7 @@
 
 let contentTitle;
 
-console.log(document.cookie);
+// console.log(document.cookie);
 function dynamicClothingSection(ob) {
   let boxDiv = document.createElement("div");
   boxDiv.id = "box";
@@ -61,18 +61,23 @@ httpRequest.onreadystatechange = function() {
     if (this.status == 200) {
       // console.log('call successful');
       contentTitle = JSON.parse(this.responseText);
-      if (document.cookie.indexOf(",counter=") >= 0) {
-        var counter = document.cookie.split(",")[1].split("=")[1];
-        document.getElementById("badge").innerHTML = counter;
+      let cartItems = JSON.parse(localStorage.getItem("cart")) || [];
+      console.log(cartItems.length);
+      if (cartItems.length > 0) {
+        document.getElementById("badge").innerHTML = cartItems.length;
       }
+      // if (document.cookie.indexOf(",counter=") >= 0) {
+      //   var counter = document.cookie.split(",")[1].split("=")[1];
+      //   document.getElementById("badge").innerHTML = counter;
+      // }
       for (let i = 0; i < contentTitle.length; i++) {
         if (contentTitle[i].isAccessory) {
-          console.log(contentTitle[i]);
+          // console.log(contentTitle[i]);
           containerAccessories.appendChild(
             dynamicClothingSection(contentTitle[i])
           );
         } else {
-          console.log(contentTitle[i]);
+          // console.log(contentTitle[i]);
           containerClothing.appendChild(
             dynamicClothingSection(contentTitle[i])
           );

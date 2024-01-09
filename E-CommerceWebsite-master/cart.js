@@ -102,14 +102,16 @@ httpRequest.onreadystatechange = function()
         {
             // console.log('call successful');
             contentTitle = JSON.parse(this.responseText)
-
-            let counter = Number(document.cookie.split(',')[1].split('=')[1])
+            console.log("content title", contentTitle);
+            let counter = (JSON.parse(localStorage.getItem("cart")) || []).length;
             document.getElementById("totalItem").innerHTML = ('Total Items: ' + counter)
 
-            let item = document.cookie.split(',')[0].split('=')[1].split(" ")
+            let item = JSON.parse(localStorage.getItem("cart")) || [];
             console.log(counter)
             console.log(item)
-
+            item.sort((a, b) => {
+                return a.id - b.id;
+            });
             let i;
             let totalAmount = 0
             for(i=0; i<counter; i++)
@@ -117,13 +119,14 @@ httpRequest.onreadystatechange = function()
                 let itemCounter = 1
                 for(let j = i+1; j<counter; j++)
                 {   
-                    if(Number(item[j]) == Number(item[i]))
+                    if(item[i].id == item[j].id)
                     {
                         itemCounter +=1;
                     }
                 }
-                totalAmount += Number(contentTitle[item[i]-1].price) * itemCounter
-                dynamicCartSection(contentTitle[item[i]-1],itemCounter)
+                
+                totalAmount += Number(item[i].price) * itemCounter
+                dynamicCartSection(item[i],itemCounter)
                 i += (itemCounter-1)
             }
             amountUpdate(totalAmount)
