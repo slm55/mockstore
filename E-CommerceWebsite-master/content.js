@@ -1,20 +1,17 @@
+import Product from "./Product.js";
+import Cart from "./CartClass.js";
 // console.clear();
 
 let contentTitle;
 
-// console.log(document.cookie);
 function dynamicClothingSection(ob) {
   let boxDiv = document.createElement("div");
   boxDiv.id = "box";
 
   let boxLink = document.createElement("a");
-  // boxLink.href = '#'
-  boxLink.href = "/contentDetails.html?" + ob.id;
-  // console.log('link=>' + boxLink);
+  boxLink.href = "./contentDetails.html?id=" + ob.id;
 
   let imgTag = document.createElement("img");
-  // imgTag.id = 'image1'
-  // imgTag.id = ob.photos
   imgTag.src = ob.preview;
 
   let detailsDiv = document.createElement("div");
@@ -42,55 +39,25 @@ function dynamicClothingSection(ob) {
   return boxDiv;
 }
 
-//  TO SHOW THE RENDERED CODE IN CONSOLE
-// console.log(dynamicClothingSection());
-
-// console.log(boxDiv)
-
 let mainContainer = document.getElementById("mainContainer");
 let containerClothing = document.getElementById("containerClothing");
 let containerAccessories = document.getElementById("containerAccessories");
-// mainContainer.appendChild(dynamicClothingSection('hello world!!'))
 
-// BACKEND CALLING
+Product.getAllProducts().then((products) => {
+  console.log(products);
+  addProductCards(products);
+});
 
-let httpRequest = new XMLHttpRequest();
-
-httpRequest.onreadystatechange = function() {
-  if (this.readyState === 4) {
-    if (this.status == 200) {
-      // console.log('call successful');
-      contentTitle = JSON.parse(this.responseText);
-      let cartItems = JSON.parse(localStorage.getItem("cart")) || [];
-      console.log(cartItems.length);
-      if (cartItems.length > 0) {
-        document.getElementById("badge").innerHTML = cartItems.length;
-      }
-      // if (document.cookie.indexOf(",counter=") >= 0) {
-      //   var counter = document.cookie.split(",")[1].split("=")[1];
-      //   document.getElementById("badge").innerHTML = counter;
-      // }
-      for (let i = 0; i < contentTitle.length; i++) {
-        if (contentTitle[i].isAccessory) {
-          // console.log(contentTitle[i]);
-          containerAccessories.appendChild(
-            dynamicClothingSection(contentTitle[i])
-          );
-        } else {
-          // console.log(contentTitle[i]);
-          containerClothing.appendChild(
-            dynamicClothingSection(contentTitle[i])
-          );
-        }
-      }
+function addProductCards(products) {
+  let cart = new Cart();
+  if (cart.getCartSize() > 0) {
+    document.getElementById("badge").innerHTML = cart.getCartSize();
+  }
+  for (let i = 0; i < products.length; i++) {
+    if (products[i].isAccessory) {
+      containerAccessories.appendChild(dynamicClothingSection(products[i]));
     } else {
-      console.log("call failed!");
+      containerClothing.appendChild(dynamicClothingSection(products[i]));
     }
   }
-};
-httpRequest.open(
-  "GET",
-  "https://659c067fd565feee2dac49a8.mockapi.io/shoplane/api/v1/products",
-  true
-);
-httpRequest.send();
+}

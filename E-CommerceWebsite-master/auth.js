@@ -1,24 +1,12 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { firebaseConfig } from "./config.js";
-
-initializeApp(firebaseConfig);
-
-const auth = getAuth();
-
+import User from "./User.js";
 const forms = document.querySelector(".forms");
 const container = document.querySelector(".container");
 const pwShowHide = document.querySelectorAll(".eye-icon");
 const links = document.querySelectorAll(".link");
-const signInEmailInput = document.querySelector(".email-signin");
+const signInNumberInput = document.querySelector(".number-signin");
 const signInPasswordInput = document.querySelector(".password-signin");
-const signUpEmailInput = document.querySelector(".email-signup");
+const signUpNameInput = document.querySelector(".name-signup");
+const signUpNumberInput = document.querySelector(".number-signup");
 const signUpPasswordInput = document.querySelector(".password-signup");
 const signUpRepasswordInput = document.querySelector(".repassword-signup");
 const signInButton = document.getElementById("sign-in");
@@ -26,17 +14,17 @@ const signUpButton = document.getElementById("sign-up");
 const signOutButton = document.getElementById("sign-out");
 const accountSection = document.getElementById("account");
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    container.style.display = "none";
-    accountSection.style.display = "block";
-    let emailP = document.getElementById("user-email");
-    emailP.innerText = user.email;
-  } else {
-    container.style.display = "flex";
-    accountSection.style.display = "none";
-  }
-});
+let currentUser = User.getCurrentUser();
+
+if (currentUser) {
+  container.style.display = "none";
+  accountSection.style.display = "block";
+  let emailP = document.getElementById("user-email");
+  emailP.innerText = currentUser.username;
+} else {
+  container.style.display = "flex";
+  accountSection.style.display = "none";
+}
 
 pwShowHide.forEach((eyeIcon) => {
   eyeIcon.addEventListener("click", () => {
@@ -74,36 +62,40 @@ signUpButton.addEventListener("click", (e) => {
 
 signOutButton.addEventListener("click", (e) => {
   e.preventDefault(); //preventing form submit
-  signOut(auth);
+  signOut();
 });
 
+function signOut() {
+  let currentUser = User.getCurrentUser();
+  if (currentUser) {
+    if (currentUser.logout()) {
+      console.log("hi");
+      window.location.reload();
+    }
+  }
+}
+
 function signIn() {
-  if (auth.currentUser) {
-    signOut(auth);
+  let currentUser = User.getCurrentUser();
+  if (currentUser) {
+    return;
   } else {
-    const email = signInEmailInput.value;
+    const number = signInNumberInput.value;
     const password = signInPasswordInput.value;
-    if (email.length < 4) {
-      alert("Please enter an email address.");
+    if (number.length < 11) {
+      alert("Please enter a phone number.");
       return;
     }
     if (password.length < 4) {
       alert("Please enter a password.");
       return;
     }
-    // Sign in with email and pass.
-    signInWithEmailAndPassword(auth, email, password).catch(function (error) {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      if (errorCode === "auth/wrong-password") {
-        alert("Wrong password.");
-      } else {
-        alert(errorMessage);
-      }
-      console.log(error);
-      signInButton.disabled = false;
-    });
+
+    let newUser = new User("", number, password);
+    if (newUser.login()) {
+      window.location = "index.html";
+      return;
+    }
   }
   signInButton.disabled = true;
 }
@@ -112,12 +104,13 @@ function signIn() {
  * Handles the sign up button press.
  */
 function signUp() {
-  const email = signUpEmailInput.value;
+  const username = signUpNameInput.value;
+  const number = signUpNumberInput.value;
   const password = signUpPasswordInput.value;
   const repassword = signUpRepasswordInput.value;
 
-  if (email.length < 4) {
-    alert("Please enter an email address.");
+  if (number.length < 11) {
+    alert("Please enter a phone number.");
     return;
   }
   if (password.length < 4) {
@@ -129,18 +122,9 @@ function signUp() {
     alert("Passwords are not the same.");
     return;
   }
-  // Create user with email and pass.
-  createUserWithEmailAndPassword(auth, email, password)
-    .then((user) => {})
-    .catch(function (error) {
-      // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      if (errorCode == "auth/weak-password") {
-        alert("The password is too weak.");
-      } else {
-        alert(errorMessage);
-      }
-      console.log(error);
-    });
+
+  let newUser = new User(username, number, password);
+  if (newUser.register()) {
+    window.location = "index.html";
+  }
 }

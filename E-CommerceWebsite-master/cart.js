@@ -1,10 +1,14 @@
+import Cart from "./CartClass.js"
 console.clear();
 
-if(document.cookie.indexOf(',counter=')>=0)
+const cart = new Cart();
+
+if(cart.getCartSize() > 0)
 {
-    let counter = document.cookie.split(',')[1].split('=')[1]
-    document.getElementById("badge").innerHTML = counter
+    document.getElementById("badge").innerHTML = cart.getCartSize();
 }
+
+document.getElementById("totalItem").innerHTML = ('Total Items: ' + cart.getCartSize())
 
 
 let cartContainer = document.getElementById('cartContainer')
@@ -12,7 +16,6 @@ let cartContainer = document.getElementById('cartContainer')
 let boxContainerDiv = document.createElement('div')
 boxContainerDiv.id = 'boxContainer'
 
-// DYNAMIC CODE TO SHOW THE SELECTED ITEMS IN YOUR CART
 function dynamicCartSection(ob,itemCounter)
 {
     let boxDiv = document.createElement('div')
@@ -80,67 +83,21 @@ let buttonTag = document.createElement('button')
 buttonDiv.appendChild(buttonTag)
 
 let buttonLink = document.createElement('a')
-buttonLink.href = '/orderPlaced.html?'
+buttonLink.href = './orderPlaced.html?'
 buttonTag.appendChild(buttonLink)
 
-buttonText = document.createTextNode('Place Order')
+let buttonText = document.createTextNode('Place Order')
 buttonTag.onclick = function()
 {
     console.log("clicked")
-}  
-//dynamicCartSection()
-// console.log(dynamicCartSection());
+} 
 
-// BACKEND CALL
-let httpRequest = new XMLHttpRequest()
-let totalAmount = 0
-httpRequest.onreadystatechange = function()
-{
-    if(this.readyState === 4)
-    {
-        if(this.status == 200)
-        {
-            // console.log('call successful');
-            contentTitle = JSON.parse(this.responseText)
-            console.log("content title", contentTitle);
-            let counter = (JSON.parse(localStorage.getItem("cart")) || []).length;
-            document.getElementById("totalItem").innerHTML = ('Total Items: ' + counter)
-
-            let item = JSON.parse(localStorage.getItem("cart")) || [];
-            console.log(counter)
-            console.log(item)
-            item.sort((a, b) => {
-                return a.id - b.id;
-            });
-            let i;
-            let totalAmount = 0
-            for(i=0; i<counter; i++)
-            {
-                let itemCounter = 1
-                for(let j = i+1; j<counter; j++)
-                {   
-                    if(item[i].id == item[j].id)
-                    {
-                        itemCounter +=1;
-                    }
-                }
-                
-                totalAmount += Number(item[i].price) * itemCounter
-                dynamicCartSection(item[i],itemCounter)
-                i += (itemCounter-1)
-            }
-            amountUpdate(totalAmount)
-        }
-    }
-        else
-        {
-            console.log('call failed!');
-        }
+for (let cartItem of cart.products) {
+    dynamicCartSection(cartItem.product, cartItem.quantity);
 }
 
-httpRequest.open('GET', 'https://5d76bf96515d1a0014085cf9.mockapi.io/product', true)
-httpRequest.send()
-
+amountUpdate(cart.getTotalPrice());
+console.log("price", cart.getTotalPrice())
 
 
 

@@ -1,13 +1,17 @@
+import Product from "./Product.js";
+import Cart from "./CartClass.js"
 console.clear()
 
-let id = location.search.split('?')[1]
-console.log(id)
+let id = location.search.split('=')[1]
+console.log("id",id)
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 if (cart.length > 0) {
     document.getElementById("badge").innerHTML = cart.length;
 }
 
+const product = Product.getProductById(id)
+.then((product) => dynamicContentDetails(product));
 
 function dynamicContentDetails(ob)
 {
@@ -84,25 +88,17 @@ function dynamicContentDetails(ob)
     let buttonTag = document.createElement('button')
     buttonDiv.appendChild(buttonTag)
 
-    buttonText = document.createTextNode('Add to Cart')
+    let buttonText = document.createTextNode('Add to Cart')
     buttonTag.onclick  =  function()
     {
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
-        cart.push(ob);
-        localStorage.setItem("cart", JSON.stringify(cart));
-
-        // let order = id + " "
-        // let counter = 1
-        // if(document.cookie.indexOf(',counter=') >= 0)
-        // {
-        //     order = id + " " + document.cookie.split(',')[0].split('=')[1]
-        //     counter = Number(document.cookie.split(',')[1].split('=')[1]) + 1
-        // }
-        // document.cookie = "orderId=" + order + ",counter=" + counter
-        if (cart.length > 0) {
-            document.getElementById("badge").innerHTML = cart.length;
+        let cart = new Cart();
+        cart.addToCart(ob);
+        console.log(ob);
+        console.log("cart products", cart.products)
+        console.log(cart.getCartSize())
+        if (cart.products.length > 0) {
+            document.getElementById("badge").innerHTML = cart.getCartSize();
         }
-        // console.log(document.cookie)
     }
     buttonTag.appendChild(buttonText)
 
@@ -124,30 +120,3 @@ function dynamicContentDetails(ob)
 
     return mainContainer
 }
-
-
-
-// BACKEND CALLING
-
-let httpRequest = new XMLHttpRequest()
-{
-    httpRequest.onreadystatechange = function()
-    {
-        if(this.readyState === 4 && this.status == 200)
-        {
-            console.log('connected!!');
-            let contentDetails = JSON.parse(this.responseText)
-            {
-                console.log(contentDetails);
-                dynamicContentDetails(contentDetails)
-            }
-        }
-        else
-        {
-            console.log('not connected!');
-        }
-    }
-}
-
-httpRequest.open('GET', 'https://5d76bf96515d1a0014085cf9.mockapi.io/product/'+id, true)
-httpRequest.send()  
